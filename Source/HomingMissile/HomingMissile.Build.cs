@@ -1,5 +1,6 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
+using System.IO;
 using UnrealBuildTool;
 
 public class HomingMissile : ModuleRules
@@ -8,6 +9,17 @@ public class HomingMissile : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "NavigationSystem", "AIModule", "Niagara", "EnhancedInput" });
+        PublicDependencyModuleNames.AddRange(new string[]
+        {
+	        "Core",
+	        "CoreUObject",
+	        "Engine",
+	        "InputCore",
+	        "NavigationSystem",
+	        "AIModule",
+	        "Niagara",
+	        "EnhancedInput",
+	        "UMG"
+        });
     }
 }
