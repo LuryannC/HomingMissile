@@ -33,7 +33,7 @@ void AHomingMissileGameMode::PostLogin(APlayerController* NewPlayer)
 	if (AHomingMissilePlayerController* PC = Cast<AHomingMissilePlayerController>(NewPlayer))
 	{
 		//TODO: Initialize player menu.
-		PC->InitializePlayer();
+		//PC->InitializePlayer();
 	}
 }
 
@@ -48,6 +48,12 @@ void AHomingMissileGameMode::StartRound()
 	{
 		GS->StartTimer();
 	}
+
+	if (bShowDebugLog)
+	{
+		UE_LOG(LogTemp, Display, TEXT("AHomingMissileGameMode::StartRound - Round Started"))
+	}
+	
 	OnRoundStartEvent.Broadcast();
 }
 
@@ -55,9 +61,7 @@ void AHomingMissileGameMode::EndRound()
 {
 	if (AHomingMissileGameState* GS = Cast<AHomingMissileGameState>(GameState))
 	{
-		GS->RoundTimerHandle.Invalidate();
-		
-		FRoundStatistics RoundStatistics{};
+		FRoundStatistics RoundStatistics;
 		RoundStatistics.ElapsedSeconds = GS->ElapsedSeconds;
 		RoundStatistics.LastCompletedRound = GS->CurrentRound;
 		RoundStatistics.WaspsKilled = GS->WaspsKilled;
@@ -66,24 +70,35 @@ void AHomingMissileGameMode::EndRound()
 		OnRoundEndEvent.Broadcast(RoundStatistics);
 
 
-		if (RoundParamsCurveTable)
+		if (GS->CurrentRound > GetCurveTableColumnCount())
 		{
-			if (GS->CurrentRound > RoundParamsCurveTable->GetRowMap().Num())
-			{
-				EndGame();
-				return;
-			}
+			EndGame();
+			return;
+		}
+		
+		if (bShowDebugLog)
+		{
+			UE_LOG(LogTemp, Display, TEXT("AHomingMissileGameMode::EndRound - End Round"))
 		}
 
+
+		GS->ElapsedSeconds = 0;
 		GS->CurrentRound++;
+		
+		GS->ResetTimer();
 	}
 }
 
 void AHomingMissileGameMode::EndGame()
 {
+	if (bShowDebugLog)
+	{
+		UE_LOG(LogTemp, Display, TEXT("AHomingMissileGameMode::EndRound - End Game"))
+	}
+	
 	if (AHomingMissileGameState* GS = Cast<AHomingMissileGameState>(GameState))
 	{
-		GS->Reset();
+		GS->ResetGameValues();
 	}
 }
 
@@ -91,4 +106,21 @@ void AHomingMissileGameMode::EndGame()
 void AHomingMissileGameMode::DebugEndRound()
 {
 	EndRound();
+}
+
+int32 AHomingMissileGameMode::GetCurveTableColumnCount() const
+{
+	if (!RoundParamsCurveTable || RoundParamsCurveTable->GetRowMap().IsEmpty())
+	{
+		UE_LOG(LogTemp, Display, TEXT("AHomingMissileGameMode::GetCurveTableColumnCount - Invalid or empty Curve Table"))
+		return 0;
+	}
+
+	for (const TPair<FName, FRealCurve*>& RowPair : RoundParamsCurveTable->GetRowMap())
+	{
+		const int32 Size = RowPair.Value->GetNumKeys() - 1;
+		return Size;
+	}
+	
+	return 0;
 }

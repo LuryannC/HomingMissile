@@ -21,7 +21,7 @@ protected:
 
 	UPROPERTY(meta=(BindWidget))
 	TObjectPtr<UTextBlock> TimerText;
-
+	
 	TObjectPtr<UButton> ShopButton;
 
 private:

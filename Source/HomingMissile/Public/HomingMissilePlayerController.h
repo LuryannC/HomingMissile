@@ -7,6 +7,7 @@
 #include "GameFramework/PlayerController.h"
 #include "HomingMissilePlayerController.generated.h"
 
+class AHomingMissileEntityBase;
 class UHomingMissileRootWidget;
 /** Forward declaration to improve compiling times */
 class UNiagaraSystem;
@@ -31,9 +32,16 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputMappingContext* DefaultMappingContext;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	UInputAction* SetDestinationClickAction;
+	
 protected:
 
 	virtual void SetupInputComponent() override;
+
+	void OnMouseClicked();
+
+	void FireProjectile(FHitResult HitResult);
 	
 	// To add mapping context
 	virtual void BeginPlay();
@@ -43,6 +51,12 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr<UHomingMissileRootWidget> RootWidget;
+
+	UPROPERTY(EditAnywhere, Category="Bees")
+	TSubclassOf<AHomingMissileEntityBase> SpawnObjectClass;
+
+	UPROPERTY(EditAnywhere, Category="Bees")
+	AActor* ProjectileObjectSpawnPoint;
 
 private:
 };

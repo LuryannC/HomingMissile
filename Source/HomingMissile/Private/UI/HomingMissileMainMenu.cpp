@@ -43,6 +43,9 @@ void UHomingMissileMainMenu::OnStartGameButtonClicked()
 		if (AHomingMissilePlayerController* PC = Cast<AHomingMissilePlayerController>(GetOwningPlayer()))
 		{
 			PC->GetRootWidget()->PushWidget(InGameWidgetClass);
+
+			const FInputModeGameAndUI InputModeGameAndUI;
+			PC->SetInputMode(InputModeGameAndUI);
 		}
 	}
 }

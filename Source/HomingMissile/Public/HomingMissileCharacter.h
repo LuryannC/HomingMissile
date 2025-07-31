@@ -4,10 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Interfaces/HomingProjectileInterface.h"
 #include "HomingMissileCharacter.generated.h"
 
+class AProjectileActorBase;
+
 UCLASS(Blueprintable)
-class AHomingMissileCharacter : public ACharacter
+class AHomingMissileCharacter : public ACharacter, public IHomingProjectileInterface
 {
 	GENERATED_BODY()
 
@@ -21,6 +24,12 @@ public:
 	FORCEINLINE class UCameraComponent* GetTopDownCameraComponent() const { return TopDownCameraComponent; }
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
+	
+	/** Start HomingProjectileInterface Methods **/
+	virtual bool CanBeTargeted_Implementation() override;
+	virtual FVector GetFiringSpawnLocation_Implementation() override;
+	virtual void FireProjectile_Implementation(AActor* InTargetActor) override;
+	/** End of HomingProjectileInterface **/
 
 private:
 	/** Top down camera */
@@ -30,5 +39,12 @@ private:
 	/** Camera boom positioning the camera above the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* CameraBoom;
+
+protected:
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AActor> ProjectileToSpawn;
+
+	UPROPERTY(EditAnywhere)
+	UArrowComponent* ProjectileSpawnLocation;
 };
 

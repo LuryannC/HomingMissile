@@ -32,3 +32,20 @@ void AHomingMissileGameState::UpdateElapsedTime()
 		}
 	}
 }
+
+void AHomingMissileGameState::ResetGameValues()
+{
+	CurrentRound = 0;
+	ElapsedSeconds = 0;
+	WaspsKilled = 0;
+	PollenCollected = 0;
+
+	GetWorldTimerManager().ClearTimer(RoundTimerHandle);
+	RoundTimerHandle.Invalidate();
+}
+
+void AHomingMissileGameState::ResetTimer()
+{
+	GetWorldTimerManager().ClearTimer(RoundTimerHandle);
+	StartTimer();
+}

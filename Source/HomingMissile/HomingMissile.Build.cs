@@ -19,7 +19,8 @@ public class HomingMissile : ModuleRules
 	        "AIModule",
 	        "Niagara",
 	        "EnhancedInput",
-	        "UMG"
+	        "UMG",
+	        "HomingProjectile"
         });
     }
 }

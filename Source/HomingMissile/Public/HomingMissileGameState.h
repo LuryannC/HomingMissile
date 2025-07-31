@@ -31,6 +31,9 @@ public:
 	int32 PollenCollected = 0;
 	
 	FTimerHandle RoundTimerHandle;
+
+	void ResetGameValues();
+	void ResetTimer();
 	
 protected:
 	

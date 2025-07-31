@@ -31,6 +31,9 @@ public:
 
 	// Debug
 	void DebugEndRound();
+
+	UPROPERTY(EditAnywhere, Category="Debug")
+	bool bShowDebugLog = false;
 	
 protected:
 	
@@ -41,6 +44,8 @@ private:
 	void StartRound();
 	void EndRound();
 	void EndGame();
+
+	int32 GetCurveTableColumnCount() const;
 };
 
 

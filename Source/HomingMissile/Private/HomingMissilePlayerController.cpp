@@ -10,8 +10,12 @@
 #include "EnhancedInputComponent.h"
 #include "InputActionValue.h"
 #include "EnhancedInputSubsystems.h"
+#include "ActorComponents/HomingMissileTargetingComponent.h"
+#include "Actors/HomingMissileEntityBase.h"
 #include "Blueprint/UserWidget.h"
 #include "Engine/LocalPlayer.h"
+#include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "UI/HomingMissileRootWidget.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -67,16 +71,64 @@ void AHomingMissilePlayerController::SetupInputComponent()
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent))
 	{
 		// Setup mouse input events
-		// EnhancedInputComponent->BindAction(SetDestinationClickAction, ETriggerEvent::Started, this, &AHomingMissilePlayerController::OnInputStarted);
-		// EnhancedInputComponent->BindAction(SetDestinationClickAction, ETriggerEvent::Triggered, this, &AHomingMissilePlayerController::OnSetDestinationTriggered);
-		// EnhancedInputComponent->BindAction(SetDestinationClickAction, ETriggerEvent::Completed, this, &AHomingMissilePlayerController::OnSetDestinationReleased);
-		// EnhancedInputComponent->BindAction(SetDestinationClickAction, ETriggerEvent::Canceled, this, &AHomingMissilePlayerController::OnSetDestinationReleased);
+		EnhancedInputComponent->BindAction(SetDestinationClickAction, ETriggerEvent::Completed, this, &AHomingMissilePlayerController::OnMouseClicked);
 	}
 	else
 	{
 		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input Component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
 	}
 }
+
+void AHomingMissilePlayerController::OnMouseClicked()
+{
+	FHitResult Hit;
+	bool bHitSuccessful = GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, true, Hit);
+	if (bHitSuccessful)
+	{
+		FireProjectile(Hit);
+		
+		// UHomingMissileTargetingComponent* TargetingComponent = Hit.GetActor()->FindComponentByClass<UHomingMissileTargetingComponent>();
+		// if (TargetingComponent)
+		// {
+		// 	FActorSpawnParameters SpawnParameters;
+		// 	SpawnParameters.Owner = this;
+		// 	SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+		//
+		// 	
+		// 	if (SpawnObjectClass)
+		// 	{
+		// 		AHomingMissileEntityBase* HomingMissileEntityBase = GetWorld()->SpawnActor<AHomingMissileEntityBase>(SpawnObjectClass, FTransform::Identity, SpawnParameters);
+		// 		if (HomingMissileEntityBase)
+		// 		{
+		// 			UHomingMissileTargetingComponent* SpawnedTargetingComponent = HomingMissileEntityBase->GetComponentByClass<UHomingMissileTargetingComponent>();
+		// 			if (SpawnedTargetingComponent)
+		// 			{
+		// 				SpawnedTargetingComponent->SetTarget(Hit.GetActor());
+		// 			}
+		// 		}
+		// 	}
+		// }
+	}
+}
+
+void AHomingMissilePlayerController::FireProjectile(FHitResult HitResult)
+{
+	if (const IHomingProjectileInterface* OtherActorProjectileInterface = Cast<IHomingProjectileInterface>(HitResult.GetActor()))
+	{
+		if (OtherActorProjectileInterface->Execute_CanBeTargeted(HitResult.GetActor()))
+		{
+			if (GetPawn())
+			{
+				if (const IHomingProjectileInterface* ControlledPawnHomingInterface = Cast<IHomingProjectileInterface>(GetPawn()))
+				{
+					ControlledPawnHomingInterface->Execute_FireProjectile(GetPawn(), HitResult.GetActor());
+				}
+			}			
+		}
+	}
+}
+
+
 //
 // void AHomingMissilePlayerController::OnInputStarted()
 // {

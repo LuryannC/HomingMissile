@@ -9,12 +9,6 @@
 AProjectileBase::AProjectileBase()
 {
 	PrimaryActorTick.bCanEverTick = true;
-
-
-	ProjectileMesh = CreateDefaultSubobject<UMeshComponent>(TEXT("ProjectileMesh"));
-	SetRootComponent(ProjectileMesh);
-	
-	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComponent"));
 }
 
 // Called when the game starts or when spawned

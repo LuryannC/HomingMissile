@@ -13,7 +13,7 @@ enum EQueenCommandType
 };
 
 UENUM(BlueprintType)
-enum EEntityTeam
+enum EEntityTeam : uint8
 {
 	Bee,
 	Wasp,

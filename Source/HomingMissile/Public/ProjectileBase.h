@@ -21,20 +21,7 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TObjectPtr<UProjectileMovementComponent> ProjectileMovementComponent;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TObjectPtr<UMeshComponent> ProjectileMesh;
-	
-	UPROPERTY(BlueprintReadWrite, Category="Projectile Settings")
-	float ProjectileSpeed = 100.0f;
-
-	UPROPERTY(BlueprintReadWrite, Category="Projectile Settings")
-	float DamageAreaRadius = 250.0f;
-	
-	UPROPERTY(BlueprintReadWrite, Category="Projectile Settings")
-	float ProjectileDamage = 100.0f;
 
 public:
 	
