@@ -27,6 +27,12 @@ protected:
 	UPROPERTY(meta=(BindWidget))
 	TObjectPtr<UButton> ExitButton;
 
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UUserWidget> TutorialWidgetClass;
+	
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UUserWidget> InGameWidgetClass;
+
 private:
 
 	UFUNCTION()

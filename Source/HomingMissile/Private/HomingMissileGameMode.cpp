@@ -65,11 +65,14 @@ void AHomingMissileGameMode::EndRound()
 
 		OnRoundEndEvent.Broadcast(RoundStatistics);
 
-	
-		if (GS->CurrentRound > RoundParamsCurveTable->GetRowMap().Num())
+
+		if (RoundParamsCurveTable)
 		{
-			EndGame();
-			return;
+			if (GS->CurrentRound > RoundParamsCurveTable->GetRowMap().Num())
+			{
+				EndGame();
+				return;
+			}
 		}
 
 		GS->CurrentRound++;

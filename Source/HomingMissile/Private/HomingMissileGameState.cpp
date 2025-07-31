@@ -23,9 +23,10 @@ void AHomingMissileGameState::UpdateElapsedTime()
 	ElapsedSeconds++;
 	OnTimeUpdatedEvent.Broadcast(ElapsedSeconds);
 
-	if (AHomingMissileGameMode* GM = Cast<AHomingMissileGameMode>(AuthorityGameMode))
+
+	if (bEnableRoundDebug && ElapsedSeconds >= MaxSecondsToSwitchRound)
 	{
-		if (bEnableRoundDebug && ElapsedSeconds >= MaxSecondsToSwitchRound)
+		if (AHomingMissileGameMode* GM = Cast<AHomingMissileGameMode>(AuthorityGameMode))
 		{
 			GM->DebugEndRound();
 		}

@@ -22,7 +22,10 @@ public:
 	void InitializeRootWidget();
 	
 	UFUNCTION(BlueprintCallable)
-	void PushWidget(UUserWidget* WidgetToPush);
+	void PushWidget(UClass* WidgetClassToPush);
+
+	UFUNCTION(BlueprintCallable)
+	void ReturnToPreviousWidget();
 
 protected:
 
@@ -36,7 +39,7 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<UUserWidget> CurrentChildWidget;
-	
+
 	UPROPERTY()
-	TObjectPtr<UUserWidget> PreviousChildWidget;
+	TSubclassOf<UUserWidget> PreviousChildWidgetClass;
 };

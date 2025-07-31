@@ -4,7 +4,9 @@
 #include "UI/HomingMissileMainMenu.h"
 
 #include "HomingMissileGameMode.h"
+#include "HomingMissilePlayerController.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "UI/HomingMissileRootWidget.h"
 
 void UHomingMissileMainMenu::NativeConstruct()
 {
@@ -35,10 +37,25 @@ void UHomingMissileMainMenu::OnStartGameButtonClicked()
 			GM->StartGame();
 		}
 	}
+	
+	if (InGameWidgetClass && GetWorld() && GetOwningPlayer())
+	{
+		if (AHomingMissilePlayerController* PC = Cast<AHomingMissilePlayerController>(GetOwningPlayer()))
+		{
+			PC->GetRootWidget()->PushWidget(InGameWidgetClass);
+		}
+	}
 }
 
 void UHomingMissileMainMenu::OnTutorialButtonClicked()
 {
+	if (TutorialWidgetClass && GetWorld() && GetOwningPlayer())
+	{
+		if (AHomingMissilePlayerController* PC = Cast<AHomingMissilePlayerController>(GetOwningPlayer()))
+		{
+			PC->GetRootWidget()->PushWidget(TutorialWidgetClass);
+		}
+	}
 }
 
 void UHomingMissileMainMenu::OnExitButtonClicked()

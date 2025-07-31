@@ -6,38 +6,54 @@
 void UHomingMissileRootWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	
+
+	FTimerHandle TimerHandle;
 	GetWorld()->GetTimerManager().SetTimerForNextTick([this]()
 	{
 		InitializeRootWidget();
-	});	
+	});
 }
 
 void UHomingMissileRootWidget::InitializeRootWidget()
 {
 	if (DefaultStartupWidget && GetWorld())
 	{
-		if (UUserWidget* WidgetInstance = CreateWidget<UUserWidget>(GetWorld(), DefaultStartupWidget))
+		PushWidget(DefaultStartupWidget);
+	}
+}
+
+void UHomingMissileRootWidget::PushWidget(UClass* WidgetClassToPush)
+{
+	if (!WidgetClassToPush && !WidgetClassToPush->IsChildOf(UUserWidget::StaticClass()))
+	{
+		UE_LOG(LogTemp, Error, TEXT("UHomingMissileRootWidget::PushWidget - Invalid class type, Please use UUserWidget."))
+		return;
+	}
+	
+	if (GetWorld() && GetOwningPlayer())
+	{
+		if (UUserWidget* WidgetInstance = CreateWidget<UUserWidget>(GetWorld(), WidgetClassToPush))
 		{
-			PushWidget(WidgetInstance);
+			if (!WidgetInstance)
+			{
+				UE_LOG(LogTemp, Error, TEXT("UHomingMissileRootWidget::PushWidget - Tried to push invalid widget."))
+				return;
+			}
+
+			if (CurrentChildWidget)
+			{
+				CurrentChildWidget.Get()->RemoveFromParent();
+				PreviousChildWidgetClass = CurrentChildWidget.GetClass();
+			}
+
+			CurrentChildWidget = WidgetInstance;
+
+			WidgetAreaOverlay.Get()->AddChild(WidgetInstance);
 		}
 	}
 }
 
-void UHomingMissileRootWidget::PushWidget(UUserWidget* WidgetToPush)
+void UHomingMissileRootWidget::ReturnToPreviousWidget()
 {
-	if (!WidgetToPush)
-	{
-		UE_LOG(LogTemp, Error, TEXT("UHomingMissileRootWidget::PushWidget - Tried to push invalid widget."))
-		return;
-	}
-	
-	PreviousChildWidget = CurrentChildWidget;
-	if (PreviousChildWidget)
-	{
-		WidgetAreaOverlay.Get()->RemoveChild(PreviousChildWidget);
-	}
-
-	CurrentChildWidget = WidgetToPush;
-	WidgetAreaOverlay.Get()->AddChild(WidgetToPush);
+	PushWidget(PreviousChildWidgetClass);
 }

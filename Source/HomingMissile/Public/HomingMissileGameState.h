@@ -6,7 +6,7 @@
 #include "GameFramework/GameState.h"
 #include "HomingMissileGameState.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTimeUpdatedDelegate, int32, TotalSeconds);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTimeUpdatedDelegate, const int32&, TotalSeconds);
 
 /**
  * 
