@@ -2,7 +2,6 @@
 
 #include "HomingMissileGameMode.h"
 #include "HomingMissilePlayerController.h"
-#include "HomingMissileCharacter.h"
 #include "HomingMissileGameState.h"
 #include "UObject/ConstructorHelpers.h"
 

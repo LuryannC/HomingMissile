@@ -23,15 +23,6 @@ protected:
 	
 	UPROPERTY(EditAnywhere, Category="Homing Projectile")
 	float PredictionTime = 0.5f;
-
-	UPROPERTY(EditAnywhere, Category="Homing Projectile")
-	float HomingStrength = 500.0f;
-	
-	// UPROPERTY(EditAnywhere, Category="Homing Projectile")
-	// bool bUseAdaptivePrediction = false;
-	//
-	// UPROPERTY(EditAnywhere, Category="Homing Projectile", meta=(EditCondition = "bUseAdaptivePrediction"))
-	// float PredictionScale = 2.0;
 	
 	UPROPERTY(EditAnywhere, Category="Homing Projectile")
 	bool bShouldUpdateHomingDirection = true;

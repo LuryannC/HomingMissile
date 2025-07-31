@@ -3,7 +3,6 @@
 
 #include "Actors/ProjectileActorBase.h"
 #include "Components/ProjectileComponent.h"
-#include "Components/TargetingComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 
 AProjectileActorBase::AProjectileActorBase()
