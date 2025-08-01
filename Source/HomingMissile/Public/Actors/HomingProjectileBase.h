@@ -8,6 +8,9 @@
 
 enum EEntityTeam : uint8;
 
+/*
+ * Inherited class from AProjectileActorBase in Homing Projectile Plugin
+ */
 UCLASS()
 class HOMINGMISSILE_API AHomingProjectileBase : public AProjectileActorBase
 {

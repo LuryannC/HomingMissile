@@ -52,7 +52,12 @@ public:
 	void IncreaseBeesCount();
 	void CollectPollen();
 
-	int32 GetCurrentBonusDamage() const { return BonusDamage; }
+	int32 GetAvailableWarriorBeesToSpawn() const { return AvailableWarriorBeesToSpawn; }
+	int32 GetBonusDamage() const { return BonusDamage; }
+
+	void SetAvailableWarriorBeesToSpawn(const int32 Amount) { AvailableWarriorBeesToSpawn = Amount; }
+	void SetBonusDamage(const int32 Amount) {BonusDamage = Amount; }
+
 protected:
 	int32 AvailableWarriorBeesToSpawn = 2;
 	int32 AvailableWorkerBeesToSpawn = 2;

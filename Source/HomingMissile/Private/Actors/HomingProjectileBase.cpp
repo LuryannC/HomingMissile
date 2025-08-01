@@ -81,15 +81,26 @@ void AHomingProjectileBase::ApplyDamage(AActor* TargetActor, int32 Amount)
 	{
 		if (Target->ProjectileTeam != ProjectileTeam)
 		{
-			Target->TakeDamage(Amount);
+			int32 TotalDamage = Amount;
+			
+			// Player bonus damage
+			if (GetOwner())
+			{
+				if (AHomingMissileCharacter* Character = Cast<AHomingMissileCharacter>(GetOwner()))
+				{
+					TotalDamage += Character->GetBonusDamage();
+				}
+			}
+			
+			Target->TakeDamage(TotalDamage);
 			BP_OnApplyDamage();
 			LastTimeUsedAttack = GetWorld()->GetTimeSeconds();
 			
 			UE_LOG(LogTemp, Display, TEXT("AHomingProjectileBase::ApplyDamage - %s Applied %i to %s"), *GetName(), Amount, *TargetActor->GetName());
 
-			if (Target->GetHealth() - Amount <= 0)
+			if ((Target->GetHealth() - Amount) <= 0)
 			{
-				// TODO: FIND NEXT TARGET
+				SetProjectileTarget_Implementation(ProjectileComponent->FindAnotherTarget());
 			}
 		}
 	}
@@ -101,6 +112,11 @@ void AHomingProjectileBase::BP_OnApplyDamage_Implementation()
 
 void AHomingProjectileBase::OnDeath()
 {
+	if (ProjectileComponent)
+	{
+		GetWorldTimerManager().ClearTimer(ProjectileComponent->UpdateTimerHandle);
+	}
+	
 	BP_OnDeath();
 }
 

@@ -20,6 +20,10 @@ public:
 
 	void SetTargetActor(AActor* InActor) { TargetActor = InActor; }
 
+	AActor* FindAnotherTarget() const;
+
+	FTimerHandle UpdateTimerHandle;
+
 protected:
 	virtual void BeginPlay() override;
 	
@@ -28,6 +32,15 @@ protected:
 	
 	UPROPERTY(EditAnywhere, Category="Homing Projectile")
 	bool bShouldUpdateHomingDirection = true;
+
+	UPROPERTY(EditAnywhere, Category="Homing Projectile", meta=(EditCondition = "bShouldUpdateHomingDirection", EditConditionHides))
+	bool bCanSearchForAnotherTarget = true;
+
+	UPROPERTY(EditAnywhere, Category="Homing Projectile", meta=(EditCondition = "bShouldUpdateHomingDirection && bCanSearchForAnotherTarget", EditConditionHides))
+	float SearchRadius = 1000.0f;
+
+	UPROPERTY(EditAnywhere, Category="Homing Projectile", meta=(EditCondition = "bShouldUpdateHomingDirection", EditConditionHides))
+	float UpdateRate = 0.01f;
 	
 	UPROPERTY(EditAnywhere, Category="Homing Projectile")
 	float TurnSpeed = 5.0f;
@@ -35,12 +48,12 @@ protected:
 	UPROPERTY(EditAnywhere, Category="Homing Projectile")
 	bool bDrawDebug = false;
 
-	UPROPERTY(EditAnywhere, Category="Homing Projectile", meta=(EditCondition = "bDrawDebug"))
+	/* Shows which direction the projectile is facing, this is to increase the size of the debug line. */
+	UPROPERTY(EditAnywhere, Category="Homing Projectile", meta=(EditCondition = "bDrawDebug", EditConditionHides))
 	float TurningUnits = 200.0f;
 
-public:
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
-	                           FActorComponentTickFunction* ThisTickFunction) override;
+	UPROPERTY(EditAnywhere, Category="Homing Projectile", meta=(EditCondition = "bDrawDebug", EditConditionHides))
+	float PredictionSphereRadius = 250.0f;
 
 private:
 	FVector GetPredictedTargetLocation(const float DeltaTime) const;
