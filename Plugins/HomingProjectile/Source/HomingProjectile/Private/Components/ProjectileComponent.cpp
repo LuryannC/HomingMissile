@@ -1,5 +1,6 @@
 #include "Components/ProjectileComponent.h"
 
+#include "HomingProjectileLog.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 
 UProjectileComponent::UProjectileComponent()
@@ -14,7 +15,7 @@ void UProjectileComponent::BeginPlay()
 	ProjectileMovement = GetOwner()->FindComponentByClass<UProjectileMovementComponent>();
 	if (!ProjectileMovement)
 	{
-		UE_LOG(LogTemp, Error, TEXT("UHomingMissileTargetingComponent::BeginPlay - Couldn't find projectile component."));
+		UE_LOG(HomingProjectileLog, Error, TEXT("UHomingMissileTargetingComponent::BeginPlay - Couldn't find projectile component."));
 	}
 	else
 	{
@@ -34,11 +35,11 @@ void UProjectileComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	}
 }
 
-FVector UProjectileComponent::GetPredictedTargetLocation(float DeltaTime)
+FVector UProjectileComponent::GetPredictedTargetLocation(const float DeltaTime) const
 {
 	if (!TargetActor)
 	{
-		UE_LOG(LogTemp, Error, TEXT("UProjectileComponent::GetPredictedTargetLocation - Invalid Target."));
+		UE_LOG(HomingProjectileLog, Error, TEXT("UProjectileComponent::GetPredictedTargetLocation - Invalid Target."));
 		return FVector::ZeroVector;
 	}
 
@@ -60,7 +61,7 @@ void UProjectileComponent::UpdateHomingDirection(const float DeltaTime)
 	
 	if (!TargetActor || !ProjectileMovement)
 	{
-		UE_LOG(LogTemp, Display, TEXT("UHomingMissileTargetingComponent::UpdateHomingDirection - Invalid Target or Projectile Movement Component"));
+		UE_LOG(HomingProjectileLog, Display, TEXT("UHomingMissileTargetingComponent::UpdateHomingDirection - Invalid Target or Projectile Movement Component"));
 		return;
 	}
 

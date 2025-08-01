@@ -27,6 +27,10 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Homing Projectile")
 	AActor* GetProjectileTarget();
 	virtual AActor* GetProjectileTarget_Implementation();
+	
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Homing Projectile")
+	uint8 GetProjectileTeam();
+	virtual uint8 GetProjectileTeam_Implementation();
 
 	/** For the Shooter **/
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Homing Projectile")
@@ -35,5 +39,5 @@ public:
 	
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Homing Projectile")
 	void FireProjectile(AActor* InTargetActor);
-	virtual void FireProjectile_Implementation(AActor* InTargetActor);	
+	virtual void FireProjectile_Implementation(AActor* InTargetActor);
 };

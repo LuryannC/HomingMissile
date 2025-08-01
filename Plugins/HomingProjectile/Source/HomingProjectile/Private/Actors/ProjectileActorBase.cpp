@@ -26,7 +26,7 @@ void AProjectileActorBase::Tick(float DeltaTime)
 
 bool AProjectileActorBase::CanBeTargeted_Implementation()
 {
-	return bCanBeTargeted;
+	return false;
 }
 
 void AProjectileActorBase::SetProjectileTarget_Implementation(AActor* InTarget)

@@ -91,7 +91,13 @@ void AHomingMissilePlayerController::FireProjectile(FHitResult HitResult)
 			{
 				if (const IHomingProjectileInterface* ControlledPawnHomingInterface = Cast<IHomingProjectileInterface>(GetPawn()))
 				{
-					ControlledPawnHomingInterface->Execute_FireProjectile(GetPawn(), HitResult.GetActor());
+					const uint8 ControlledPawnTeam = ControlledPawnHomingInterface->Execute_GetProjectileTeam(GetPawn());
+					const uint8 OtherActorTeam = OtherActorProjectileInterface->Execute_GetProjectileTeam(HitResult.GetActor());
+					
+					if (ControlledPawnTeam != OtherActorTeam)
+					{
+						ControlledPawnHomingInterface->Execute_FireProjectile(GetPawn(), HitResult.GetActor());
+					}
 				}
 			}			
 		}

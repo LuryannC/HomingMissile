@@ -46,5 +46,18 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	UArrowComponent* ProjectileSpawnLocation;
+
+	// Abilities
+public:
+	void IncreaseBeesCount();
+	void CollectPollen();
+
+	int32 GetCurrentBonusDamage() const { return BonusDamage; }
+protected:
+	int32 AvailableWarriorBeesToSpawn = 2;
+	int32 AvailableWorkerBeesToSpawn = 2;
+	int32 PollenCollected = 100;
+	float CollectionSpeedMultiplier = 1.0f;
+	int32 BonusDamage = 0;
 };
 

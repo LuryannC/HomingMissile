@@ -77,9 +77,9 @@ void AHomingMissileCharacter::FireProjectile_Implementation(AActor* InTargetActo
 		SpawnParameters.Owner = this;
 		SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 		
-		if (ProjectileToSpawn)
+		if (ProjectileToSpawn && ProjectileSpawnLocation)
 		{
-			AProjectileActorBase* Projectile = GetWorld()->SpawnActor<AProjectileActorBase>(ProjectileToSpawn, FTransform::Identity, SpawnParameters);
+			AProjectileActorBase* Projectile = GetWorld()->SpawnActor<AProjectileActorBase>(ProjectileToSpawn, ProjectileSpawnLocation->GetComponentTransform(), SpawnParameters);
 			if (Projectile)
 			{
 				Projectile->SetProjectileTarget_Implementation(InTargetActor);

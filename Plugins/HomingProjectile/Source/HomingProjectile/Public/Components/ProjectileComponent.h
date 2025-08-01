@@ -18,6 +18,8 @@ class HOMINGPROJECTILE_API UProjectileComponent : public UActorComponent
 public:
 	UProjectileComponent();
 
+	void SetTargetActor(AActor* InActor) { TargetActor = InActor; }
+
 protected:
 	virtual void BeginPlay() override;
 	
@@ -41,7 +43,7 @@ public:
 	                           FActorComponentTickFunction* ThisTickFunction) override;
 
 private:
-	FVector GetPredictedTargetLocation(const float DeltaTime);
+	FVector GetPredictedTargetLocation(const float DeltaTime) const;
 	void UpdateHomingDirection(float DeltaTime);
 	
 	UPROPERTY()

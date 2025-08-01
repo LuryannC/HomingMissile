@@ -12,7 +12,7 @@ class USphereComponent;
 class UTargetingComponent;
 class UProjectileComponent;
 
-UCLASS()
+UCLASS(Abstract)
 class HOMINGPROJECTILE_API AProjectileActorBase : public AActor, public IHomingProjectileInterface
 {
 	GENERATED_BODY()
@@ -39,9 +39,6 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-	UPROPERTY(EditDefaultsOnly, Category="Homing Projectile")
-	bool bCanBeTargeted = false;
 
 public:
 	// Called every frame
