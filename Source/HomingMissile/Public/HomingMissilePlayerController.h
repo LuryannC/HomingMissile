@@ -40,9 +40,9 @@ protected:
 
 	void OnMouseClicked();
 
-	void FireProjectile(FHitResult HitResult);
+	void FireProjectile(const FHitResult& HitResult) const;
 	
-	virtual void BeginPlay();
+	virtual void BeginPlay() override;
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UHomingMissileRootWidget> RootWidgetClass;

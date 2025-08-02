@@ -8,6 +8,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "Blueprint/UserWidget.h"
 #include "Engine/LocalPlayer.h"
+#include "Interfaces/HomingProjectileTargetInterface.h"
 #include "UI/HomingMissileRootWidget.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -81,22 +82,24 @@ void AHomingMissilePlayerController::OnMouseClicked()
 	}
 }
 
-void AHomingMissilePlayerController::FireProjectile(FHitResult HitResult)
+void AHomingMissilePlayerController::FireProjectile(const FHitResult& HitResult) const
 {
-	if (const IHomingProjectileInterface* OtherActorProjectileInterface = Cast<IHomingProjectileInterface>(HitResult.GetActor()))
+	if (HitResult.GetActor() &&
+		HitResult.GetActor()->GetClass()->ImplementsInterface(UHomingProjectileInterface::StaticClass()) &&
+		HitResult.GetActor()->GetClass()->ImplementsInterface(UHomingProjectileTargetInterface::StaticClass()))
 	{
-		if (OtherActorProjectileInterface->Execute_CanBeTargeted(HitResult.GetActor()))
+		if (IHomingProjectileTargetInterface::Execute_CanBeTargeted(HitResult.GetActor()))
 		{
 			if (GetPawn())
 			{
-				if (const IHomingProjectileInterface* ControlledPawnHomingInterface = Cast<IHomingProjectileInterface>(GetPawn()))
+				if (GetPawn()->GetClass()->ImplementsInterface(UHomingProjectileInterface::StaticClass()))
 				{
-					const uint8 ControlledPawnTeam = ControlledPawnHomingInterface->Execute_GetProjectileTeam(GetPawn());
-					const uint8 OtherActorTeam = OtherActorProjectileInterface->Execute_GetProjectileTeam(HitResult.GetActor());
+					const uint8 ControlledPawnTeam = IHomingProjectileInterface::Execute_GetProjectileTeam(GetPawn());
+					const uint8 OtherActorTeam = IHomingProjectileInterface::Execute_GetProjectileTeam(HitResult.GetActor());
 					
 					if (ControlledPawnTeam != OtherActorTeam)
 					{
-						ControlledPawnHomingInterface->Execute_FireProjectile(GetPawn(), HitResult.GetActor());
+						IHomingProjectileTargetInterface::Execute_FireProjectile(GetPawn(), HitResult.GetActor());
 					}
 				}
 			}			

@@ -5,12 +5,13 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Interfaces/HomingProjectileInterface.h"
+#include "Interfaces/HomingProjectileTargetInterface.h"
 #include "HomingMissileCharacter.generated.h"
 
 class AProjectileActorBase;
 
 UCLASS(Blueprintable)
-class AHomingMissileCharacter : public ACharacter, public IHomingProjectileInterface
+class AHomingMissileCharacter : public ACharacter, public IHomingProjectileInterface, public IHomingProjectileTargetInterface
 {
 	GENERATED_BODY()
 
@@ -25,11 +26,11 @@ public:
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	
-	/** Start HomingProjectileInterface Methods **/
+	/** Start IHomingProjectileTargetInterface Methods **/
 	virtual bool CanBeTargeted_Implementation() override;
 	virtual FVector GetFiringSpawnLocation_Implementation() override;
 	virtual void FireProjectile_Implementation(AActor* InTargetActor) override;
-	/** End of HomingProjectileInterface **/
+	/** End of IHomingProjectileTargetInterface **/
 
 private:
 	/** Top down camera */
@@ -42,7 +43,10 @@ private:
 
 protected:
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<AActor> ProjectileToSpawn;
+	TSubclassOf<AActor> BeeWarriorProjectileClass;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AActor> BeeWorkerProjectileClass;
 
 	UPROPERTY(EditAnywhere)
 	UArrowComponent* ProjectileSpawnLocation;

@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Interfaces/HomingProjectileInterface.h"
+#include "Interfaces/HomingProjectileTargetInterface.h"
 #include "ProjectileActorBase.generated.h"
 
 class UProjectileMovementComponent;
@@ -22,7 +23,6 @@ public:
 	AProjectileActorBase();
 	
 	// ~ Start HomingProjectileInterface Methods
-	virtual bool CanBeTargeted_Implementation() override;
 	virtual void SetProjectileTarget_Implementation(AActor* InTarget) override;
 	virtual AActor* GetProjectileTarget_Implementation() override;
 	// ~ End of HomingProjectileInterface
@@ -39,6 +39,12 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
+	/* This is called in case the bShouldCallEndGoalOnFailingToFindTarget is true, to let the developer decide what to do with this projectile. */
+	UFUNCTION(BlueprintNativeEvent)
+	void BP_OnEndPurpose();
+	virtual void BP_OnEndPurpose_Implementation();
 
 public:
 	// Called every frame

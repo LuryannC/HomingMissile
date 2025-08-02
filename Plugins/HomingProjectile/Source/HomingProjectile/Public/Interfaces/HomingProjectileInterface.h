@@ -15,11 +15,6 @@ class HOMINGPROJECTILE_API IHomingProjectileInterface
 	GENERATED_BODY()
  
 public:
-	/** for the projectile **/
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Homing Projectile")
-	bool CanBeTargeted();
-	virtual bool CanBeTargeted_Implementation();
-
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Homing Projectile")
 	void SetProjectileTarget(AActor* InTarget);
 	virtual void SetProjectileTarget_Implementation(AActor* InTarget);
@@ -31,13 +26,4 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Homing Projectile")
 	uint8 GetProjectileTeam();
 	virtual uint8 GetProjectileTeam_Implementation();
-
-	/** For the Shooter **/
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Homing Projectile")
-	FVector GetFiringSpawnLocation();
-	virtual FVector GetFiringSpawnLocation_Implementation();
-	
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Homing Projectile")
-	void FireProjectile(AActor* InTargetActor);
-	virtual void FireProjectile_Implementation(AActor* InTargetActor);
 };

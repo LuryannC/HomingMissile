@@ -11,6 +11,10 @@ AProjectileActorBase::AProjectileActorBase()
 
 	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComponent"));
 	ProjectileComponent = CreateDefaultSubobject<UProjectileComponent>(TEXT("ProjectileComponent"));
+	if (ProjectileComponent)
+	{
+		ProjectileComponent->OnEndPurpose.AddDynamic(this, &AProjectileActorBase::AProjectileActorBase::BP_OnEndPurpose);
+	}
 }
 
 void AProjectileActorBase::BeginPlay()
@@ -19,14 +23,18 @@ void AProjectileActorBase::BeginPlay()
 	
 }
 
+void AProjectileActorBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if (ProjectileComponent)
+	{
+		ProjectileComponent->OnEndPurpose.RemoveAll(this);
+	}
+	Super::EndPlay(EndPlayReason);
+}
+
 void AProjectileActorBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-}
-
-bool AProjectileActorBase::CanBeTargeted_Implementation()
-{
-	return false;
 }
 
 void AProjectileActorBase::SetProjectileTarget_Implementation(AActor* InTarget)
@@ -40,4 +48,10 @@ void AProjectileActorBase::SetProjectileTarget_Implementation(AActor* InTarget)
 AActor* AProjectileActorBase::GetProjectileTarget_Implementation()
 {
 	return ProjectileTarget;
+}
+
+void AProjectileActorBase::BP_OnEndPurpose_Implementation()
+{
+	ProjectileMovementComponent->bIsHomingProjectile = false;
+	ProjectileMovementComponent->HomingTargetComponent = nullptr;
 }

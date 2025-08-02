@@ -2,6 +2,7 @@
 
 #include "HomingMissileCharacter.h"
 
+#include "HomingMissileDataTypes.h"
 #include "Actors/ProjectileActorBase.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Camera/CameraComponent.h"
@@ -71,19 +72,62 @@ FVector AHomingMissileCharacter::GetFiringSpawnLocation_Implementation()
 
 void AHomingMissileCharacter::FireProjectile_Implementation(AActor* InTargetActor)
 {
-	if (InTargetActor)
+	if (!InTargetActor || !ProjectileSpawnLocation)
 	{
-		FActorSpawnParameters SpawnParameters;
-		SpawnParameters.Owner = this;
-		SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-		
-		if (ProjectileToSpawn && ProjectileSpawnLocation)
+		return;
+	}
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = this;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+	
+	if (!InTargetActor->GetClass()->ImplementsInterface(UHomingProjectileInterface::StaticClass()))
+	{
+		return;
+	}
+
+	const EEntityTeam TargetTeam = static_cast<EEntityTeam>(IHomingProjectileInterface::Execute_GetProjectileTeam(InTargetActor));
+	UClass* ClassToSpawn = (TargetTeam == EEntityTeam::Wasp) ? BeeWarriorProjectileClass : BeeWorkerProjectileClass;
+
+	if (!ClassToSpawn)
+	{
+		return;
+	}
+	
+	bool bShouldSpawn = false;
+
+	switch (TargetTeam)
+	{
+	case EEntityTeam::Wasp:
+		if (AvailableWarriorBeesToSpawn > 0)
 		{
-			AProjectileActorBase* Projectile = GetWorld()->SpawnActor<AProjectileActorBase>(ProjectileToSpawn, ProjectileSpawnLocation->GetComponentTransform(), SpawnParameters);
-			if (Projectile)
-			{
-				Projectile->SetProjectileTarget_Implementation(InTargetActor);
-			}
+			AvailableWarriorBeesToSpawn--;
+			bShouldSpawn = true;
 		}
+		break;
+
+	case EEntityTeam::Pollen:
+		if (AvailableWorkerBeesToSpawn > 0)
+		{
+			AvailableWorkerBeesToSpawn--;
+			bShouldSpawn = true;
+		}
+		break;
+
+	default:
+		break;
+	}
+
+	if (bShouldSpawn)
+	{
+		AProjectileActorBase* Projectile = GetWorld()->SpawnActor<AProjectileActorBase>(
+		ClassToSpawn, 
+		ProjectileSpawnLocation->GetComponentTransform(), 
+		SpawnParams
+		);		
+
+		if (!Projectile) return;
+
+		Projectile->SetProjectileTarget_Implementation(InTargetActor);
 	}
 }

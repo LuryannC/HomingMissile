@@ -1,7 +1,8 @@
 #include "Components/ProjectileComponent.h"
-
+#include "Interfaces/HomingProjectileInterface.h"
 #include "HomingProjectileLog.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Interfaces/HomingProjectileTargetInterface.h"
 
 UProjectileComponent::UProjectileComponent()
 {
@@ -36,7 +37,7 @@ void UProjectileComponent::BeginPlay()
 
 FVector UProjectileComponent::GetPredictedTargetLocation(const float DeltaTime) const
 {
-	if (!TargetActor)
+	if (!IsValid(TargetActor))
 	{
 		//UE_LOG(HomingProjectileLog, Error, TEXT("UProjectileComponent::GetPredictedTargetLocation - Invalid Target."));
 		return FVector::ZeroVector;
@@ -50,54 +51,75 @@ FVector UProjectileComponent::GetPredictedTargetLocation(const float DeltaTime) 
 
 void UProjectileComponent::UpdateHomingDirection(const float DeltaTime)
 {
-	if (!TargetActor)
-	{
-		if (const IHomingProjectileInterface* ProjectileInterface = Cast<IHomingProjectileInterface>(GetOwner()))
-		{
-			TargetActor = ProjectileInterface->Execute_GetProjectileTarget(GetOwner());
-		}
-	}
-	
-	if (!ProjectileMovement)
-	{
-		UE_LOG(HomingProjectileLog, Display, TEXT("UHomingMissileTargetingComponent::UpdateHomingDirection - Invalid Projectile Movement Component"));
-		return;
-	}
-	
-	if (!TargetActor && bCanSearchForAnotherTarget)
-	{
-		TargetActor = FindAnotherTarget();
-		if (!TargetActor)
-		{
-			ProjectileMovement->bIsHomingProjectile = false;
-			ProjectileMovement->HomingTargetComponent = nullptr;
+	// ProjectileMovementComponent check as it is essential.
+	check(ProjectileMovement);
 
-			// Could also call destruction on this actor as it is no longer useful.
-			return;
+	// Attempt to acquire initial target via interface
+	if (!IsValid(TargetActor))
+	{
+		if (IsValid(GetOwner()))
+		{
+			if (GetOwner()->GetClass()->ImplementsInterface(UHomingProjectileInterface::StaticClass()))
+			{
+				TargetActor = IHomingProjectileInterface::Execute_GetProjectileTarget(GetOwner());
+			}
 		}
 	}
 
-	if (ProjectileMovement && ProjectileMovement->HomingTargetComponent.IsValid() && ProjectileMovement->HomingTargetComponent != TargetActor->GetRootComponent())
+	if (IsValid(TargetActor))
 	{
-		ProjectileMovement->bIsHomingProjectile = true;
-		ProjectileMovement->HomingTargetComponent = TargetActor->GetRootComponent();
+		// Update Homing Target if changed
+		USceneComponent* TargetRoot = TargetActor->GetRootComponent();
+		if (TargetRoot && (!ProjectileMovement->HomingTargetComponent.IsValid() || ProjectileMovement->HomingTargetComponent != TargetRoot))
+		{
+			ProjectileMovement->bIsHomingProjectile = true;
+			ProjectileMovement->HomingTargetComponent = TargetRoot;
+		}
 	}
-	
+
+	// Calculate the direction
 	const FVector CurrentLocation = GetOwner()->GetActorLocation();
 	const FVector PredictedLocation = GetPredictedTargetLocation(DeltaTime);
 
+	FVector DesiredDirection;
+	if (PredictedLocation == FVector::ZeroVector)
+	{
+		const FVector RandomDirection = FVector(FMath::RandRange(-1.f, 1.f), FMath::RandRange(-1.f, 1.f), 0.f).GetSafeNormal();
+		DesiredDirection = RandomDirection;
+	}
+	else
+	{
+		DesiredDirection = (PredictedLocation - CurrentLocation).GetSafeNormal();
+	}
 
-	const float RandomX = FMath::RandRange(-1,1);
-	const float RandomY = FMath::RandRange(-1,1);
-	const FVector RandomDirection = FVector(RandomX, RandomY, 0.0f);
-	
-	const FVector DesiredDirection = PredictedLocation == FVector::ZeroVector ? RandomDirection : (PredictedLocation - CurrentLocation).GetSafeNormal();
 	const FVector CurrentDirection = ProjectileMovement->Velocity.GetSafeNormal();
-
 	const FVector NewDirection = FMath::VInterpTo(CurrentDirection, DesiredDirection, DeltaTime, TurnSpeed);
 
 	ProjectileMovement->Velocity = NewDirection * ProjectileMovement->InitialSpeed;
 
+	// Attempt to find another target or end the purpose of this projectile.
+	if (!IsValid(TargetActor))
+	{
+		if (bCanSearchForAnotherTarget)
+		{
+			TargetActor = FindAnotherTarget();
+			
+			if (!IsValid(TargetActor))
+			{
+				// This projectile doesn't have a purpose anymore
+				if (bShouldCallEndGoalOnFailingToFindTarget)
+				{
+					OnEndPurpose.Broadcast();
+					return;
+				}
+			}
+		}
+		else
+		{
+			OnEndPurpose.Broadcast();
+			return;
+		}
+	}
 
 	if (bDrawDebug)
 	{
@@ -143,11 +165,18 @@ AActor* UProjectileComponent::FindAnotherTarget() const
 
 		if (Candidate->GetClass()->ImplementsInterface(UHomingProjectileInterface::StaticClass()))
 		{
-			const bool bCanBeTargeted = IHomingProjectileInterface::Execute_CanBeTargeted(Candidate);
+			bool bCanBeTargeted = false;
+			bool bCanTarget = true;
+			if (Candidate->GetClass()->ImplementsInterface(UHomingProjectileTargetInterface::StaticClass()))
+			{
+				bCanBeTargeted = IHomingProjectileTargetInterface::Execute_CanBeTargeted(Candidate);
+				bCanTarget = IHomingProjectileTargetInterface::Execute_CanTarget(GetOwner(), Candidate);
+			}
+			
 			const uint8 TargetTeam = IHomingProjectileInterface::Execute_GetProjectileTeam(Candidate);
 			const uint8 OwnerTeam = IHomingProjectileInterface::Execute_GetProjectileTeam(GetOwner());
 			
-			if (bCanBeTargeted && OwnerTeam != TargetTeam)
+			if (bCanBeTargeted && OwnerTeam != TargetTeam && bCanTarget)
 			{
 				float DistSq = FVector::DistSquared(CurrentLocation, Candidate->GetActorLocation());
 				if (DistSq < ClosestDistSq)

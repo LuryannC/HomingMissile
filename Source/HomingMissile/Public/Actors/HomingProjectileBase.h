@@ -12,18 +12,21 @@ enum EEntityTeam : uint8;
  * Inherited class from AProjectileActorBase in Homing Projectile Plugin
  */
 UCLASS()
-class HOMINGMISSILE_API AHomingProjectileBase : public AProjectileActorBase
+class HOMINGMISSILE_API AHomingProjectileBase : public AProjectileActorBase, public IHomingProjectileTargetInterface
 {
 	GENERATED_BODY()
 
 public:
 	AHomingProjectileBase();
 
-	/** Start HomingProjectileInterface Methods **/
-	virtual bool CanBeTargeted_Implementation() override;
+	/** Start IHomingProjectileInterface Methods **/
 	virtual void SetProjectileTarget_Implementation(AActor* InTarget) override;
 	virtual uint8 GetProjectileTeam_Implementation() override;
-	/** End of HomingProjectileInterface **/
+	/** End of IHomingProjectileInterface **/
+
+	/** Start IHomingProjectileTargetInterface Methods **/
+	virtual bool CanBeTargeted_Implementation() override;
+	/** End of IHomingProjectileTargetInterface **/
 
 	UFUNCTION(BlueprintCallable)
 	virtual void TakeDamage(const int32 Amount);
