@@ -25,17 +25,20 @@ void AHomingProjectileWorkers::Tick(float DeltaTime)
 
 void AHomingProjectileWorkers::PerformAction(AActor* TargetActor, int32 Amount)
 {
-	if (TargetActor->GetClass()->ImplementsInterface(UHomingProjectileTargetInterface::StaticClass()))
+	if (IsValid(this))
 	{
-		if (IHomingProjectileTargetInterface::Execute_GetProjectileTeam(TargetActor) == TargetTeam)
+		if (TargetActor->GetClass()->ImplementsInterface(UHomingProjectileTargetInterface::StaticClass()))
 		{
-			// Collect Pollen
-			if (GetOwner())
+			if (IHomingProjectileTargetInterface::Execute_GetProjectileTeam(TargetActor) == TargetTeam)
 			{
-				if (AHomingMissileCharacter* Character = Cast<AHomingMissileCharacter>(GetOwner()))
+				// Collect Pollen
+				if (GetOwner())
 				{
-					const int32 PollenCollected = FMath::Clamp(Amount, ActionBaseValue, Character->GetPollenCollectionCapacity());
-					Character->CollectPollen(PollenCollected);
+					if (AHomingMissileCharacter* Character = Cast<AHomingMissileCharacter>(GetOwner()))
+					{
+						const int32 PollenCollected = FMath::Clamp(Amount, ActionBaseValue, Character->GetPollenCollectionCapacity());
+						Character->CollectPollen(PollenCollected);
+					}
 				}
 			}
 		}

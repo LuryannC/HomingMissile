@@ -3,6 +3,11 @@
 #include "HomingMissileGameMode.h"
 #include "HomingMissilePlayerController.h"
 #include "HomingMissileGameState.h"
+#include "Actors/HomingMissileSpawnAreaActor.h"
+#include "Actors/HomingProjectileWarriors.h"
+#include "Components/BoxComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "UObject/ConstructorHelpers.h"
 
 AHomingMissileGameMode::AHomingMissileGameMode()
@@ -31,13 +36,14 @@ void AHomingMissileGameMode::PostLogin(APlayerController* NewPlayer)
 
 	if (AHomingMissilePlayerController* PC = Cast<AHomingMissilePlayerController>(NewPlayer))
 	{
-		//TODO: Initialize player menu.
-		//PC->InitializePlayer();
+		// Initialize player menu
+		PC->InitializePlayer();
 	}
 }
 
 void AHomingMissileGameMode::StartGame()
 {
+	SpawnEntities();
 	StartRound();
 }
 
@@ -101,7 +107,6 @@ void AHomingMissileGameMode::EndGame()
 	}
 }
 
-// DEBUG
 void AHomingMissileGameMode::DebugEndRound()
 {
 	EndRound();
@@ -122,4 +127,94 @@ int32 AHomingMissileGameMode::GetCurveTableColumnCount() const
 	}
 	
 	return 0;
+}
+
+void AHomingMissileGameMode::SpawnEntities()
+{
+	SpawnEntity(WaspEntity, SpawnWaspsCurveTableName);
+	SpawnEntity(PollenEntity, PollenToSpawnCurveTableName);	
+}
+
+FVector AHomingMissileGameMode::GetRandomPointOnFloor(EEntityTeam SpawnTeam) const
+{
+	TArray<AActor*> OutActors;	
+	UGameplayStatics::GetAllActorsOfClass(this, AHomingMissileSpawnAreaActor::StaticClass(), OutActors);
+
+	AActor* SpawnAreaActor = nullptr;
+
+	for (const auto& Actor : OutActors)
+	{
+		if (AHomingMissileSpawnAreaActor* CurrenActorArea = Cast<AHomingMissileSpawnAreaActor>(Actor))
+		{
+			if (CurrenActorArea->EntityToSpawn == SpawnTeam)
+			{
+				SpawnAreaActor = CurrenActorArea;
+				break;
+			} 
+		}
+	}
+
+	if (SpawnAreaActor)
+	{
+		if (UBoxComponent* SpawnArea =  SpawnAreaActor->FindComponentByClass<UBoxComponent>())
+		{
+			FBox Box{SpawnArea->GetComponentLocation(), SpawnArea->GetScaledBoxExtent()};
+			FVector RandomPoint = UKismetMathLibrary::RandomPointInBoundingBox_Box(Box);
+
+			const float Floor = Box.Min.Z = Box.Max.Z;
+			RandomPoint.Z = Floor;
+
+			return RandomPoint;
+		}
+	}
+	
+	return FVector::ZeroVector;
+}
+
+void AHomingMissileGameMode::SpawnEntity(const FSpawnedEntity SpawnedEntity, const FName TableName) const
+{
+	if (const FRealCurve* Curve = RoundParamsCurveTable->FindCurve(TableName, FString::Printf(TEXT("%s"), *TableName.ToString())))
+	{
+		if (const AHomingMissileGameState* GS = GetGameState<AHomingMissileGameState>())
+		{
+			const float AmountToSpawnFloat = Curve->Eval(GS->CurrentRound);
+			const int32 AmountToSpawn =  FMath::CeilToInt(AmountToSpawnFloat);
+
+			if (GetWorld())
+			{
+
+				int32 SpawnedCount = 0;
+				int32 MaxAttempts = MaxAttemptsToSpawn;
+				TArray<FVector> SpawnedLocations;
+				
+				while (SpawnedCount < AmountToSpawn && MaxAttempts > 0)
+				{
+					FVector CandidateLocation = GetRandomPointOnFloor(SpawnedEntity.Team);
+					bool bTooClose = false;
+
+					for (const FVector& OtherLocation : SpawnedLocations)
+					{
+						if (FVector::DistSquared(CandidateLocation, OtherLocation) < FMath::Square(MinDistanceBetweenSpawns))
+						{
+							bTooClose = true;
+							break;
+						}
+					}
+
+					if (!bTooClose)
+					{
+						SpawnedLocations.Add(CandidateLocation);
+
+						FActorSpawnParameters SpawnParameters;
+						SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+						GetWorld()->SpawnActor<AActor>(SpawnedEntity.ActorClass, CandidateLocation, FRotator::ZeroRotator, SpawnParameters);
+
+						++SpawnedCount;
+					}
+
+					--MaxAttempts;
+				}
+			}
+		}
+	}
 }

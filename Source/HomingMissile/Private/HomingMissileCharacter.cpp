@@ -3,6 +3,8 @@
 #include "HomingMissileCharacter.h"
 
 #include "HomingMissileDataTypes.h"
+#include "HomingMissileGameMode.h"
+#include "HomingMissileGameState.h"
 #include "Actors/ProjectileActorBase.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Camera/CameraComponent.h"
@@ -14,6 +16,8 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Materials/Material.h"
 #include "Engine/World.h"
+#include "GameFramework/GameStateBase.h"
+#include "Kismet/GameplayStatics.h"
 
 AHomingMissileCharacter::AHomingMissileCharacter()
 {
@@ -51,9 +55,13 @@ AHomingMissileCharacter::AHomingMissileCharacter()
 	ProjectileSpawnLocation = CreateDefaultSubobject<UArrowComponent>(TEXT("ProjectileSpawnLocation"));
 }
 
-void AHomingMissileCharacter::Tick(float DeltaSeconds)
+void AHomingMissileCharacter::BeginPlay()
 {
-    Super::Tick(DeltaSeconds);
+	Super::BeginPlay();
+
+	// I know this is really bad :(
+	SetAvailableWarriorBeesToSpawnUpgrade(0);
+	SetAvailableWorkerBeesToSpawnUpgrade(0);
 }
 
 bool AHomingMissileCharacter::CanBeTargeted_Implementation()
@@ -99,17 +107,17 @@ void AHomingMissileCharacter::FireProjectile_Implementation(AActor* InTargetActo
 	switch (TargetTeam)
 	{
 	case EEntityTeam::Wasp:
-		if (AvailableWarriorBeesToSpawn > 0)
+		if (GetTotalWarriorBeesToSpawn() > 0)
 		{
-			AvailableWarriorBeesToSpawn--;
+			TotalWarriorBees--;
 			bShouldSpawn = true;
 		}
 		break;
 
 	case EEntityTeam::Pollen:
-		if (AvailableWorkerBeesToSpawn > 0)
+		if (GetTotalWorkerBeesToSpawn() > 0)
 		{
-			AvailableWorkerBeesToSpawn--;
+			TotalWorkerBees--;
 			bShouldSpawn = true;
 		}
 		break;
@@ -130,4 +138,54 @@ void AHomingMissileCharacter::FireProjectile_Implementation(AActor* InTargetActo
 
 		Projectile->SetProjectileTarget_Implementation(InTargetActor);
 	}
+}
+
+void AHomingMissileCharacter::PossessedBy(AController* NewController)
+{
+	SetupInitialDataValues();
+}
+
+void AHomingMissileCharacter::SetAvailableWarriorBeesToSpawnUpgrade(const int32 Amount)
+{
+	AvailableWarriorBeesToSpawnUpgrade += Amount;
+	TotalWarriorBees = AvailableWarriorBeesToSpawn + AvailableWarriorBeesToSpawnUpgrade;
+}
+
+void AHomingMissileCharacter::SetAvailableWorkerBeesToSpawnUpgrade(const int32 Amount)
+{
+	AvailableWorkerBeesToSpawnUpgrade += Amount;
+	TotalWorkerBees = AvailableWorkerBeesToSpawn + AvailableWorkerBeesToSpawnUpgrade;
+}
+
+int32 AHomingMissileCharacter::GetTotalWarriorBeesToSpawn() const
+{
+	return TotalWarriorBees;
+}
+
+int32 AHomingMissileCharacter::GetTotalWorkerBeesToSpawn() const
+{
+	return TotalWorkerBees;
+}
+
+void AHomingMissileCharacter::SetupInitialDataValues()
+{
+	AvailableWarriorBeesToSpawn = SetupDataDefaultValue(AvailableWarriorBeesToSpawnTableName) + AvailableWarriorBeesToSpawnUpgrade;
+	AvailableWorkerBeesToSpawn = SetupDataDefaultValue(AvailableWorkerBeesToSpawnTableName) + AvailableWorkerBeesToSpawnUpgrade;
+	PollenCollectionCapacity = SetupDataDefaultValue(PollenCollectionCapacityTableName) + PollenCollectionCapacityUpgrade;
+}
+
+float AHomingMissileCharacter::SetupDataDefaultValue(const FName TableRowName) const
+{
+	if (AHomingMissileGameMode* GM = Cast<AHomingMissileGameMode>(UGameplayStatics::GetGameMode(this)))
+	{
+		if (const FRealCurve* Curve = GM->RoundParamsCurveTable->FindCurve(TableRowName, FString::Printf(TEXT("%s"), *TableRowName.ToString())))
+		{
+			if (const AHomingMissileGameState* GS = Cast<AHomingMissileGameState>(UGameplayStatics::GetGameState(this)))
+			{
+				return Curve->Eval(GS->CurrentRound);
+			}
+		}
+	}
+
+	return 0.0f;
 }

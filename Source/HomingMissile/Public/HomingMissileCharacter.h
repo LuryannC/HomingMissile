@@ -18,8 +18,7 @@ class AHomingMissileCharacter : public ACharacter, public IHomingProjectileInter
 public:
 	AHomingMissileCharacter();
 
-	// Called every frame.
-	virtual void Tick(float DeltaSeconds) override;
+	virtual void BeginPlay() override;
 
 	/** Returns TopDownCameraComponent subobject **/
 	FORCEINLINE class UCameraComponent* GetTopDownCameraComponent() const { return TopDownCameraComponent; }
@@ -31,6 +30,8 @@ public:
 	virtual FVector GetFiringSpawnLocation_Implementation() override;
 	virtual void FireProjectile_Implementation(AActor* InTargetActor) override;
 	/** End of IHomingProjectileTargetInterface **/
+
+	virtual void PossessedBy(AController* NewController) override;
 
 private:
 	/** Top down camera */
@@ -51,39 +52,54 @@ protected:
 	UPROPERTY(EditAnywhere)
 	UArrowComponent* ProjectileSpawnLocation;
 
-	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Homing Missile|Game Params")
+	FName AvailableWarriorBeesToSpawnTableName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Homing Missile|Game Params")
+	FName AvailableWorkerBeesToSpawnTableName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Homing Missile|Game Params")
+	FName PollenCollectionCapacityTableName;
 public:
 	
 	int32 GetAvailableWarriorBeesToSpawn() const { return AvailableWarriorBeesToSpawn; }
 	int32 GetAvailableWorkerBeesToSpawn() const { return AvailableWorkerBeesToSpawn; }
 	int32 GetBonusDamage() const { return BonusDamage; }
 	float GetCooldownReductionPercentage() const { return CooldownReductionPercentage; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
 	int32 GetPollenCollected() const { return  PollenCollected; }
+	
 	int32 GetPollenCollectionCapacity() const { return PollenCollectionCapacity; }
 
-	void SetAvailableWarriorBeesToSpawn(const int32 Amount) { AvailableWarriorBeesToSpawn = Amount; }
-	void SetAvailableWorkerBeesToSpawn(const int32 Amount) { AvailableWorkerBeesToSpawn = Amount; }
+	void SetAvailableWarriorBeesToSpawnUpgrade(const int32 Amount);
+	void SetAvailableWorkerBeesToSpawnUpgrade(const int32 Amount);
+	void SetPollenCollectionCapacityUpgrade(const int32 Amount) { PollenCollectionCapacityUpgrade = Amount; }
 	void SetBonusDamage(const int32 Amount) {BonusDamage = Amount; }
 	void SetCooldownReductionPercentage(const float Amount)  { CooldownReductionPercentage = Amount; }
 	void CollectPollen(const int32 AmountToCollect) { PollenCollected += AmountToCollect; }
+	void BuyUpgrade(const int32 Cost) { PollenCollected -= Cost; }
+
+	int32 GetTotalWarriorBeesToSpawn() const;
+	int32 GetTotalWorkerBeesToSpawn() const;
 
 protected:
-	UPROPERTY(EditAnywhere, Category="Homing Missile|Augments")
-	int32 AvailableWarriorBeesToSpawn = 2;
-
-	UPROPERTY(EditAnywhere, Category="Homing Missile|Augments")
-	int32 AvailableWorkerBeesToSpawn = 2;
-
-	UPROPERTY(EditAnywhere, Category="Homing Missile|Augments")
-	int32 PollenCollected = 100;
+	int32 AvailableWarriorBeesToSpawn = 0;
+	int32 AvailableWarriorBeesToSpawnUpgrade = 0;
+	int32 TotalWarriorBees = 0;
 	
-	UPROPERTY(EditAnywhere, Category="Homing Missile|Augments")
-	int32 PollenCollectionCapacity = 30;
-
-	UPROPERTY(EditAnywhere, Category="Homing Missile|Augments")
+	int32 AvailableWorkerBeesToSpawn = 0;
+	int32 AvailableWorkerBeesToSpawnUpgrade = 0;
+	int32 TotalWorkerBees = 0;
+	
+	int32 PollenCollected = 0;
+	int32 PollenCollectionCapacity = 5;
+	int32 PollenCollectionCapacityUpgrade = 0;
 	int32 BonusDamage = 0;
-	
-	UPROPERTY(EditAnywhere, Category="Homing Missile|Augments")
 	float CooldownReductionPercentage = 0.0f;
+
+private:
+	void SetupInitialDataValues();
+	float SetupDataDefaultValue(const FName TableRowName) const;
 };
 
