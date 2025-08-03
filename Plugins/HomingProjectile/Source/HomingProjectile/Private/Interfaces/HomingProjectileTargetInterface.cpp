@@ -18,3 +18,8 @@ FVector IHomingProjectileTargetInterface::GetFiringSpawnLocation_Implementation(
 void IHomingProjectileTargetInterface::FireProjectile_Implementation(AActor* Target)
 {
 }
+
+uint8 IHomingProjectileTargetInterface::GetProjectileTeam_Implementation()
+{
+	return 0;
+}

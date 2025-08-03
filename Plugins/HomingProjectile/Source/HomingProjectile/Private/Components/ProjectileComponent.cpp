@@ -173,8 +173,8 @@ AActor* UProjectileComponent::FindAnotherTarget() const
 				bCanTarget = IHomingProjectileTargetInterface::Execute_CanTarget(GetOwner(), Candidate);
 			}
 			
-			const uint8 TargetTeam = IHomingProjectileInterface::Execute_GetProjectileTeam(Candidate);
-			const uint8 OwnerTeam = IHomingProjectileInterface::Execute_GetProjectileTeam(GetOwner());
+			const uint8 TargetTeam = IHomingProjectileTargetInterface::Execute_GetProjectileTeam(Candidate);
+			const uint8 OwnerTeam = IHomingProjectileTargetInterface::Execute_GetProjectileTeam(GetOwner());
 			
 			if (bCanBeTargeted && OwnerTeam != TargetTeam && bCanTarget)
 			{

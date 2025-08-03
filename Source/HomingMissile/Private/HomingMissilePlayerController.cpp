@@ -92,10 +92,10 @@ void AHomingMissilePlayerController::FireProjectile(const FHitResult& HitResult)
 		{
 			if (GetPawn())
 			{
-				if (GetPawn()->GetClass()->ImplementsInterface(UHomingProjectileInterface::StaticClass()))
+				if (GetPawn()->GetClass()->ImplementsInterface(UHomingProjectileTargetInterface::StaticClass()))
 				{
-					const uint8 ControlledPawnTeam = IHomingProjectileInterface::Execute_GetProjectileTeam(GetPawn());
-					const uint8 OtherActorTeam = IHomingProjectileInterface::Execute_GetProjectileTeam(HitResult.GetActor());
+					const uint8 ControlledPawnTeam = IHomingProjectileTargetInterface::Execute_GetProjectileTeam(GetPawn());
+					const uint8 OtherActorTeam = IHomingProjectileTargetInterface::Execute_GetProjectileTeam(HitResult.GetActor());
 					
 					if (ControlledPawnTeam != OtherActorTeam)
 					{

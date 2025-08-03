@@ -30,4 +30,8 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Homing Projectile")
 	void FireProjectile(AActor* InTargetActor);
 	virtual void FireProjectile_Implementation(AActor* InTargetActor);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Homing Projectile")
+	uint8 GetProjectileTeam();
+	virtual uint8 GetProjectileTeam_Implementation();
 };

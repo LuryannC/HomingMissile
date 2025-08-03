@@ -42,31 +42,48 @@ private:
 	class USpringArmComponent* CameraBoom;
 
 protected:
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="Homing Missile|Classes")
 	TSubclassOf<AActor> BeeWarriorProjectileClass;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="Homing Missile|Classes")
 	TSubclassOf<AActor> BeeWorkerProjectileClass;
 
 	UPROPERTY(EditAnywhere)
 	UArrowComponent* ProjectileSpawnLocation;
 
-	// Abilities
+	
 public:
-	void IncreaseBeesCount();
-	void CollectPollen();
-
+	
 	int32 GetAvailableWarriorBeesToSpawn() const { return AvailableWarriorBeesToSpawn; }
+	int32 GetAvailableWorkerBeesToSpawn() const { return AvailableWorkerBeesToSpawn; }
 	int32 GetBonusDamage() const { return BonusDamage; }
+	float GetCooldownReductionPercentage() const { return CooldownReductionPercentage; }
+	int32 GetPollenCollected() const { return  PollenCollected; }
+	int32 GetPollenCollectionCapacity() const { return PollenCollectionCapacity; }
 
 	void SetAvailableWarriorBeesToSpawn(const int32 Amount) { AvailableWarriorBeesToSpawn = Amount; }
+	void SetAvailableWorkerBeesToSpawn(const int32 Amount) { AvailableWorkerBeesToSpawn = Amount; }
 	void SetBonusDamage(const int32 Amount) {BonusDamage = Amount; }
+	void SetCooldownReductionPercentage(const float Amount)  { CooldownReductionPercentage = Amount; }
+	void CollectPollen(const int32 AmountToCollect) { PollenCollected += AmountToCollect; }
 
 protected:
+	UPROPERTY(EditAnywhere, Category="Homing Missile|Augments")
 	int32 AvailableWarriorBeesToSpawn = 2;
+
+	UPROPERTY(EditAnywhere, Category="Homing Missile|Augments")
 	int32 AvailableWorkerBeesToSpawn = 2;
+
+	UPROPERTY(EditAnywhere, Category="Homing Missile|Augments")
 	int32 PollenCollected = 100;
-	float CollectionSpeedMultiplier = 1.0f;
+	
+	UPROPERTY(EditAnywhere, Category="Homing Missile|Augments")
+	int32 PollenCollectionCapacity = 30;
+
+	UPROPERTY(EditAnywhere, Category="Homing Missile|Augments")
 	int32 BonusDamage = 0;
+	
+	UPROPERTY(EditAnywhere, Category="Homing Missile|Augments")
+	float CooldownReductionPercentage = 0.0f;
 };
 

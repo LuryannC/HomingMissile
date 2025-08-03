@@ -1,8 +1,8 @@
 #include "Actors/HomingProjectileBase.h"
-
 #include "HomingMissileCharacter.h"
 #include "Components/ProjectileComponent.h"
 #include "Components/SphereComponent.h"
+#include "HomingMissileCharacter.h"
 
 
 AHomingProjectileBase::AHomingProjectileBase()
@@ -64,49 +64,11 @@ void AHomingProjectileBase::BP_OnTakeDamage_Implementation(int32 Amount)
 {
 }
 
-void AHomingProjectileBase::ApplyDamage(AActor* TargetActor, int32 Amount)
+void AHomingProjectileBase::PerformAction(AActor* TargetActor, int32 Amount)
 {
-	if (!TargetActor)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("AHomingProjectileBase::ApplyDamage - Invalid Target"))
-		return;
-	}
-
-	if (!CanAttack())
-	{
-		return;
-	}
-	
-	if (AHomingProjectileBase* Target = Cast<AHomingProjectileBase>(TargetActor))
-	{
-		if (Target->ProjectileTeam != ProjectileTeam)
-		{
-			int32 TotalDamage = Amount;
-			
-			// Player bonus damage
-			if (GetOwner())
-			{
-				if (AHomingMissileCharacter* Character = Cast<AHomingMissileCharacter>(GetOwner()))
-				{
-					TotalDamage += Character->GetBonusDamage();
-				}
-			}
-			
-			Target->TakeDamage(TotalDamage);
-			BP_OnApplyDamage();
-			LastTimeUsedAttack = GetWorld()->GetTimeSeconds();
-			
-			UE_LOG(LogTemp, Display, TEXT("AHomingProjectileBase::ApplyDamage - %s Applied %i to %s"), *GetName(), Amount, *TargetActor->GetName());
-
-			if ((Target->GetHealth() - Amount) <= 0)
-			{
-				SetProjectileTarget_Implementation(ProjectileComponent->FindAnotherTarget());
-			}
-		}
-	}
 }
 
-void AHomingProjectileBase::BP_OnApplyDamage_Implementation()
+void AHomingProjectileBase::BP_PerformAction_Implementation()
 {
 }
 
@@ -134,10 +96,4 @@ void AHomingProjectileBase::OnSphereBeginOverlap(UPrimitiveComponent* Overlapped
 void AHomingProjectileBase::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-}
-
-bool AHomingProjectileBase::CanAttack() const
-{
-	const bool bCanAttack = GetWorld()->GetTimeSeconds() - LastTimeUsedAttack >= AttackCooldown; 
-	return bCanAttack;
 }

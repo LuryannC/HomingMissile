@@ -35,15 +35,15 @@ public:
 	UFUNCTION(BlueprintNativeEvent)
 	void BP_OnTakeDamage(int32 Amount);
 	void BP_OnTakeDamage_Implementation(int32 Amount);
-	
+
 	UFUNCTION(BlueprintCallable)
-	virtual void ApplyDamage(AActor* TargetActor, int32 Amount);
+	virtual void PerformAction(AActor* TargetActor, int32 Amount);
 
 	/* Useful for adding VFX / SFX */
 	UFUNCTION(BlueprintNativeEvent)
-	void BP_OnApplyDamage();
-	void BP_OnApplyDamage_Implementation();
-
+	void BP_PerformAction();
+	void BP_PerformAction_Implementation();
+	
 	UFUNCTION(BlueprintCallable)
 	virtual void OnDeath();
 
@@ -70,24 +70,20 @@ protected:
 	int32 HealthBase = 3;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Homing Projectile")
-	int32 DamageBase = 1;
+	int32 ActionBaseValue = 1;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Homing Projectile")
 	float AttackCooldown = 3.0f;
 
+public:
+	virtual void Tick(float DeltaTime) override;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Homing Projectile")
 	TEnumAsByte<EEntityTeam> ProjectileTeam;
 
-public:
-	virtual void Tick(float DeltaTime) override;
-
-private:
 	UFUNCTION()
 	virtual void OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	UFUNCTION()
 	virtual void OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
-
-	bool CanAttack() const;
-	float LastTimeUsedAttack = -FLT_MAX;
 };

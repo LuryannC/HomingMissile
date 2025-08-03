@@ -81,12 +81,12 @@ void AHomingMissileCharacter::FireProjectile_Implementation(AActor* InTargetActo
 	SpawnParams.Owner = this;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 	
-	if (!InTargetActor->GetClass()->ImplementsInterface(UHomingProjectileInterface::StaticClass()))
+	if (!InTargetActor->GetClass()->ImplementsInterface(UHomingProjectileTargetInterface::StaticClass()))
 	{
 		return;
 	}
 
-	const EEntityTeam TargetTeam = static_cast<EEntityTeam>(IHomingProjectileInterface::Execute_GetProjectileTeam(InTargetActor));
+	const EEntityTeam TargetTeam = static_cast<EEntityTeam>(IHomingProjectileTargetInterface::Execute_GetProjectileTeam(InTargetActor));
 	UClass* ClassToSpawn = (TargetTeam == EEntityTeam::Wasp) ? BeeWarriorProjectileClass : BeeWorkerProjectileClass;
 
 	if (!ClassToSpawn)

@@ -22,8 +22,4 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Homing Projectile")
 	AActor* GetProjectileTarget();
 	virtual AActor* GetProjectileTarget_Implementation();
-	
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Homing Projectile")
-	uint8 GetProjectileTeam();
-	virtual uint8 GetProjectileTeam_Implementation();
 };
