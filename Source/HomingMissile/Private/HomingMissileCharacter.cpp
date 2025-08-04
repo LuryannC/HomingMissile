@@ -58,10 +58,8 @@ AHomingMissileCharacter::AHomingMissileCharacter()
 void AHomingMissileCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// I know this is really bad :(
-	SetAvailableWarriorBeesToSpawnUpgrade(0);
-	SetAvailableWorkerBeesToSpawnUpgrade(0);
+	
+	ResetSpawnValues();
 }
 
 bool AHomingMissileCharacter::CanBeTargeted_Implementation()
@@ -165,6 +163,13 @@ int32 AHomingMissileCharacter::GetTotalWarriorBeesToSpawn() const
 int32 AHomingMissileCharacter::GetTotalWorkerBeesToSpawn() const
 {
 	return TotalWorkerBees;
+}
+
+void AHomingMissileCharacter::ResetSpawnValues()
+{
+	// I know this is really bad!!
+	SetAvailableWarriorBeesToSpawnUpgrade(0);
+	SetAvailableWorkerBeesToSpawnUpgrade(0);
 }
 
 void AHomingMissileCharacter::SetupInitialDataValues()

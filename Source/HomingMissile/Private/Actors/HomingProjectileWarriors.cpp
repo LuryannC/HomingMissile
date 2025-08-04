@@ -3,7 +3,9 @@
 
 #include "Actors/HomingProjectileWarriors.h"
 #include "HomingMissileCharacter.h"
+#include "HomingMissileGameMode.h"
 #include "Components/ProjectileComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 
 // Sets default values
@@ -67,6 +69,15 @@ void AHomingProjectileWarriors::BP_OnApplyDamage_Implementation()
 {
 }
 
+void AHomingProjectileWarriors::OnDeath()
+{
+	if (AHomingMissileGameMode* GM = Cast<AHomingMissileGameMode>(GetWorld()->GetAuthGameMode()))
+	{
+		GM->OnEntityDestroyedEvent.Broadcast(this);
+	}
+	Super::OnDeath();
+}
+
 
 // Called every frame
 void AHomingProjectileWarriors::Tick(float DeltaTime)
@@ -103,4 +114,13 @@ void AHomingProjectileWarriors::OnSphereBeginOverlap(UPrimitiveComponent* Overla
 void AHomingProjectileWarriors::PerformAction(AActor* TargetActor, int32 Amount)
 {
 	ApplyDamage(TargetActor, Amount);
+}
+
+void AHomingProjectileWarriors::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if (AHomingMissileGameMode* GM = Cast<AHomingMissileGameMode>(GetWorld()->GetAuthGameMode()))
+	{
+		GM->OnEntityDestroyedEvent.Broadcast(this);
+	}
+	Super::EndPlay(EndPlayReason);
 }

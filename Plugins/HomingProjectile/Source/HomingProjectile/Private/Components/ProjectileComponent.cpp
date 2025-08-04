@@ -35,6 +35,12 @@ void UProjectileComponent::BeginPlay()
 	}
 }
 
+void UProjectileComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	GetWorld()->GetTimerManager().ClearTimer(UpdateTimerHandle);
+	Super::EndPlay(EndPlayReason);
+}
+
 FVector UProjectileComponent::GetPredictedTargetLocation(const float DeltaTime) const
 {
 	if (!IsValid(TargetActor))

@@ -6,9 +6,11 @@
 #include "GameFramework/GameModeBase.h"
 #include "HomingMissileGameMode.generated.h"
 
+
 class AHomingProjectileWarriors;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRoundStartDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRoundEndDelegate, FRoundStatistics, RoundStatistics);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEntityDestroyed, AActor*, Entity);
 
 
 USTRUCT(BlueprintType)
@@ -31,6 +33,8 @@ class AHomingMissileGameMode : public AGameModeBase
 public:
 	AHomingMissileGameMode();
 
+	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void PostLogin(APlayerController* NewPlayer) override;
 
 	UFUNCTION()
@@ -44,6 +48,17 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Game Params")
 	UCurveTable* RoundParamsCurveTable;
+	
+	UPROPERTY(BlueprintReadWrite, Category="Homing Missile")
+	TArray<AActor*> PollenInGame;
+
+	UPROPERTY(BlueprintReadWrite, Category="Homing Missile")
+	TArray<AActor*> WaspsInGame;
+	
+	UPROPERTY(BlueprintReadWrite, Category="Homing Missile")
+	TArray<AActor*> BeesInGame;
+	
+	FOnEntityDestroyed OnEntityDestroyedEvent;
 
 	// Debug
 	void DebugEndRound();
@@ -72,14 +87,27 @@ protected:
 	UPROPERTY(EditAnywhere, Category="Game Params|Spawn")
 	FSpawnedEntity PollenEntity;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Game Params")
+	TSubclassOf<UUserWidget> GameOverWidgetClass;
+
 private:
 	void StartRound();
+
+	UFUNCTION(Exec) // Adding for debug
 	void EndRound();
+
+	UFUNCTION(Exec) // Adding for debug
 	void EndGame();
+	
+	void CheckRoundState();
+	bool CanEndRound();
 
 	void SpawnEntities();
-	void SpawnEntity(const FSpawnedEntity SpawnedEntity, const FName TableName) const;
+	TArray<AActor*> SpawnEntity(const FSpawnedEntity SpawnedEntity, const FName TableName) const;
 	FVector GetRandomPointOnFloor(EEntityTeam SpawnTeam) const;
+
+	UFUNCTION()
+	void OnEntityDestroyed(AActor* Entity);
 
 	int32 GetCurveTableColumnCount() const;
 };

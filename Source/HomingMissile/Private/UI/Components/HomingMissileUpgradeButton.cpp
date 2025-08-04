@@ -7,6 +7,15 @@
 
 void UHomingMissileUpgradeButton::OnBuyUpgrade()
 {
+
+	if (GetOwningPlayer() && GetOwningPlayer()->GetPawn())
+	{
+		if (AHomingMissileCharacter* Player = Cast<AHomingMissileCharacter>(GetOwningPlayer()->GetPawn()))
+		{
+			Player->BuyUpgrade(PriceUpgradeArray[CurrentIndex].Price);
+		}
+	}
+	
 	CurrentIndex++;
 
 	CurrentIndex = FMath::Clamp(CurrentIndex, 0, PriceUpgradeArray.Num());

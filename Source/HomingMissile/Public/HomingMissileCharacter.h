@@ -69,6 +69,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	int32 GetPollenCollected() const { return  PollenCollected; }
+	void BuyUpgrade(const int32 Cost) { PollenCollected -= Cost; }
 	
 	int32 GetPollenCollectionCapacity() const { return PollenCollectionCapacity; }
 
@@ -78,10 +79,11 @@ public:
 	void SetBonusDamage(const int32 Amount) {BonusDamage = Amount; }
 	void SetCooldownReductionPercentage(const float Amount)  { CooldownReductionPercentage = Amount; }
 	void CollectPollen(const int32 AmountToCollect) { PollenCollected += AmountToCollect; }
-	void BuyUpgrade(const int32 Cost) { PollenCollected -= Cost; }
 
 	int32 GetTotalWarriorBeesToSpawn() const;
 	int32 GetTotalWorkerBeesToSpawn() const;
+
+	void ResetSpawnValues();
 
 protected:
 	int32 AvailableWarriorBeesToSpawn = 0;

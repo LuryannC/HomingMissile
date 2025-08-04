@@ -64,8 +64,6 @@ void UHomingMissileUpgradeWidget::SetupButtons()
 	{
 		Button->SetIsEnabled(Button->CanBuyUpgrade());
 	}
-
-	UpdatePollenCountText();
 }
 
 void UHomingMissileUpgradeWidget::UpdateWidget()
@@ -84,7 +82,7 @@ void UHomingMissileUpgradeWidget::OnUpgradeCapacity()
 			UpgradeCapacityButton->OnBuyUpgrade();
 
 			// Reset buttons state.
-			SetupButtons();
+			UpdateWidget();
 		}
 	}
 }
@@ -99,7 +97,7 @@ void UHomingMissileUpgradeWidget::OnUpgradeBonusDamage()
 			UpgradeBonusDamageButton->OnBuyUpgrade();
 
 			// Reset buttons state.
-			SetupButtons();
+			UpdateWidget();
 		}
 	}
 }
@@ -114,7 +112,7 @@ void UHomingMissileUpgradeWidget::OnUpgradeAttackCooldownReduction()
 			UpgradeAttackCooldownReductionButton->OnBuyUpgrade();
 
 			// Reset buttons state.
-			SetupButtons();
+			UpdateWidget();
 		}
 	}
 }
@@ -129,7 +127,7 @@ void UHomingMissileUpgradeWidget::OnUpgradeNumberOfWorkers()
 			UpgradeNumberOfWorkersButton->OnBuyUpgrade();
 
 			// Reset buttons state.
-			SetupButtons();
+			UpdateWidget();
 		}
 	}
 }
@@ -144,7 +142,7 @@ void UHomingMissileUpgradeWidget::OnUpgradeNumberOfWarriors()
 			UpgradeNumberOfWarriorsButton->OnBuyUpgrade();
 
 			// Reset buttons state.
-			SetupButtons();
+			UpdateWidget();
 		}
 	}
 }

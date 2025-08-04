@@ -16,6 +16,7 @@ public:
 	AHomingProjectileWarriors();
 
 	virtual void PerformAction(AActor* TargetActor, int32 Amount) override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 	UFUNCTION(BlueprintCallable)
 	virtual void ApplyDamage(AActor* TargetActor, int32 Amount);
@@ -25,6 +26,7 @@ public:
 	void BP_OnApplyDamage();
 	void BP_OnApplyDamage_Implementation();
 
+	virtual void OnDeath() override;
 
 protected:
 	virtual void BeginPlay() override;

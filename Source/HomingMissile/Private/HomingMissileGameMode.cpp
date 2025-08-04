@@ -1,6 +1,8 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "HomingMissileGameMode.h"
+
+#include "HomingMissileCharacter.h"
 #include "HomingMissilePlayerController.h"
 #include "HomingMissileGameState.h"
 #include "Actors/HomingMissileSpawnAreaActor.h"
@@ -8,6 +10,7 @@
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "UI/HomingMissileRootWidget.h"
 #include "UObject/ConstructorHelpers.h"
 
 AHomingMissileGameMode::AHomingMissileGameMode()
@@ -30,6 +33,18 @@ AHomingMissileGameMode::AHomingMissileGameMode()
 	}
 }
 
+void AHomingMissileGameMode::BeginPlay()
+{
+	Super::BeginPlay();
+	OnEntityDestroyedEvent.AddDynamic(this, &AHomingMissileGameMode::OnEntityDestroyed);
+}
+
+void AHomingMissileGameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	OnEntityDestroyedEvent.RemoveAll(this);
+	Super::EndPlay(EndPlayReason);
+}
+
 void AHomingMissileGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
@@ -43,12 +58,26 @@ void AHomingMissileGameMode::PostLogin(APlayerController* NewPlayer)
 
 void AHomingMissileGameMode::StartGame()
 {
-	SpawnEntities();
 	StartRound();
+	if (GetWorld())
+	{
+		FTimerHandle RoundEndTimerHandle;
+		GetWorld()->GetTimerManager().SetTimer(RoundEndTimerHandle,
+											   [this]()
+											   {
+												   CheckRoundState();
+											   }, 1.0f, true);
+	}
 }
 
 void AHomingMissileGameMode::StartRound()
 {
+	PollenInGame.Empty();
+	WaspsInGame.Empty();
+	BeesInGame.Empty();
+
+	SpawnEntities();
+	
 	if (AHomingMissileGameState* GS = Cast<AHomingMissileGameState>(GameState))
 	{
 		GS->StartTimer();
@@ -89,8 +118,14 @@ void AHomingMissileGameMode::EndRound()
 
 		GS->ElapsedSeconds = 0;
 		GS->CurrentRound++;
+
+		if (AHomingMissileCharacter* Character = Cast<AHomingMissileCharacter>(GetWorld()->GetFirstPlayerController()->GetPawn()))
+		{
+			Character->ResetSpawnValues();
+		}
 		
 		GS->ResetTimer();
+		StartRound();
 	}
 }
 
@@ -105,6 +140,60 @@ void AHomingMissileGameMode::EndGame()
 	{
 		GS->ResetGameValues();
 	}
+
+	UGameplayStatics::SetGamePaused(this, true);
+	if (AHomingMissilePlayerController* PC = Cast<AHomingMissilePlayerController>(GetWorld()->GetFirstPlayerController()))
+	{
+		PC->GetRootWidget()->PushWidget(GameOverWidgetClass);
+	}
+}
+
+void AHomingMissileGameMode::CheckRoundState()
+{
+	if (CanEndRound())
+	{
+		EndRound();
+	}
+}
+
+bool AHomingMissileGameMode::CanEndRound()
+{
+	// TODO: Event dispatcher to remove the dead ones from the array.
+	if (GetWorld() && GetWorld()->GetFirstPlayerController())
+	{
+		const AHomingMissileCharacter* Character = Cast<AHomingMissileCharacter>(GetWorld()->GetFirstPlayerController()->GetPawn());
+		if (WaspsInGame.IsEmpty())
+		{
+			if (!PollenInGame.IsEmpty())
+			{
+				// Remove the nullptr to avoid bugs
+				PollenInGame.RemoveAll([](const AActor* Pollen)
+				{
+					return Pollen == nullptr;
+				});
+				
+				return Character->GetTotalWorkerBeesToSpawn() < 0;
+			}
+			return true;
+		}
+		else
+		{
+			if (!BeesInGame.IsEmpty())
+			{
+				// Remove the nullptr to avoid bugs
+				BeesInGame.RemoveAll([](const AActor* Bee)
+				{
+					return Bee == nullptr;
+				});
+			}
+			
+			if (BeesInGame.IsEmpty() && Character->GetTotalWarriorBeesToSpawn() <= 0)
+			{
+				EndRound();
+			}	
+		}
+	}
+	return false;
 }
 
 void AHomingMissileGameMode::DebugEndRound()
@@ -131,8 +220,8 @@ int32 AHomingMissileGameMode::GetCurveTableColumnCount() const
 
 void AHomingMissileGameMode::SpawnEntities()
 {
-	SpawnEntity(WaspEntity, SpawnWaspsCurveTableName);
-	SpawnEntity(PollenEntity, PollenToSpawnCurveTableName);	
+	WaspsInGame = SpawnEntity(WaspEntity, SpawnWaspsCurveTableName);
+	PollenInGame = SpawnEntity(PollenEntity, PollenToSpawnCurveTableName);	
 }
 
 FVector AHomingMissileGameMode::GetRandomPointOnFloor(EEntityTeam SpawnTeam) const
@@ -161,7 +250,8 @@ FVector AHomingMissileGameMode::GetRandomPointOnFloor(EEntityTeam SpawnTeam) con
 			FBox Box{SpawnArea->GetComponentLocation(), SpawnArea->GetScaledBoxExtent()};
 			FVector RandomPoint = UKismetMathLibrary::RandomPointInBoundingBox_Box(Box);
 
-			const float Floor = Box.Min.Z = Box.Max.Z;
+			// const float Floor = Box.Min.Z - Box.Max.Z;
+			const float Floor = 50.0f; // I will hardcode this for now just to avoid bugs on spawn
 			RandomPoint.Z = Floor;
 
 			return RandomPoint;
@@ -171,8 +261,22 @@ FVector AHomingMissileGameMode::GetRandomPointOnFloor(EEntityTeam SpawnTeam) con
 	return FVector::ZeroVector;
 }
 
-void AHomingMissileGameMode::SpawnEntity(const FSpawnedEntity SpawnedEntity, const FName TableName) const
+void AHomingMissileGameMode::OnEntityDestroyed(AActor* Entity)
 {
+	if (WaspsInGame.Contains(Entity))
+	{
+		WaspsInGame.Remove(Entity);
+	}
+	else if (PollenInGame.Contains(Entity))
+	{
+		PollenInGame.Remove(Entity);
+	}
+}
+
+TArray<AActor*> AHomingMissileGameMode::SpawnEntity(const FSpawnedEntity SpawnedEntity, const FName TableName) const
+{
+	TArray<AActor*> OutActors;
+	
 	if (const FRealCurve* Curve = RoundParamsCurveTable->FindCurve(TableName, FString::Printf(TEXT("%s"), *TableName.ToString())))
 	{
 		if (const AHomingMissileGameState* GS = GetGameState<AHomingMissileGameState>())
@@ -207,7 +311,8 @@ void AHomingMissileGameMode::SpawnEntity(const FSpawnedEntity SpawnedEntity, con
 
 						FActorSpawnParameters SpawnParameters;
 						SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-						GetWorld()->SpawnActor<AActor>(SpawnedEntity.ActorClass, CandidateLocation, FRotator::ZeroRotator, SpawnParameters);
+						AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(SpawnedEntity.ActorClass, CandidateLocation, FRotator::ZeroRotator, SpawnParameters);
+						OutActors.Add(SpawnedActor);
 
 						++SpawnedCount;
 					}
@@ -217,4 +322,6 @@ void AHomingMissileGameMode::SpawnEntity(const FSpawnedEntity SpawnedEntity, con
 			}
 		}
 	}
+
+	return OutActors;
 }

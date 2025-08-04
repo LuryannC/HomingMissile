@@ -29,6 +29,7 @@ public:
 	
 protected:
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 	/* How many steps ahead should it predict */
 	UPROPERTY(EditAnywhere, Category="Homing Projectile")
